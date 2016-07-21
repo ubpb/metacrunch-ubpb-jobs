@@ -1,0 +1,53 @@
+Bundler.require
+require "pry-byebug"
+
+options(require_args: false) do
+  add :bulk_size, "-b", "Bulk Size", Integer, default: 2000
+end
+
+d_connection = Sequel.mysql2("mabdemo", user: "root", password: "", host: "localhost")
+
+# Make sure the destination database table exists
+d_connection.create_table?(:data) do
+  String :id, primary_key: true
+  longtext :data
+  DateTime :changed_at
+end
+
+
+# Read all records from Aleph z00p table
+source Metacrunch::Redis::QueueReader.new("redis://localhost:6379/mabdemo", "aleph", blocking: true)
+
+# Restore DateTime values
+transformation do |data|
+  data = data.symbolize_keys
+  data[:changed_at] = Time.parse(data[:changed_at])
+  data
+end
+
+# Log data
+i = 0
+transformation do |data|
+  i = i+1
+  p "#{i} => #{data[:id]}"
+  data
+end
+
+# Use a buffer to allow batch inserts into destination db
+transformation_buffer(options[:bulk_size])
+
+
+# Write to destination
+destination Metacrunch::Db::Writer.new(
+  # Connection
+  d_connection,
+
+  # Select the dataset we write to
+  ->(db) {
+    db[:data]
+  },
+
+  # Options
+  use_upsert: true,
+  id_key: :id
+)

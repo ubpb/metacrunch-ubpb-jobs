@@ -1,0 +1,48 @@
+Bundler.require
+require "pry-byebug"
+
+options(require_args: false) do
+  #add :bulk_size, "-b", "Bulk Size", Integer, default: 5000
+  #add :process_id, "-i", "Process ID", Integer, required: true
+end
+
+# ssh -L 1521:localhost:1521 your_oracle_box
+s_connection = Sequel.oracle("aleph22", user: "padview", password: "v22lookylooky", host: "localhost", port: 1521)
+
+
+# Read all records from Aleph z00p table
+timestamp = (Time.now - 3.month).strftime("%Y%m%d%H%M%S")
+db_source = Metacrunch::Db::Reader.new(
+  # Connection
+  s_connection,
+
+  # Select relevant data
+  ->(db) {
+    #db["select * from pad50.z00p p where p.z00p_timestamp >= ?", timestamp].order("pad50.z00p.z00p_timestamp")
+    #db["select * from pad50.z00p"].order("pad50.z00p.z00p_rec_key")
+    db["select * from pad50.z00p"].order("pad50.z00p.z00p_rec_key")
+  },
+
+  # Options
+  rows_per_fetch: 5000
+)
+
+source db_source
+
+
+# Extract the data we want from Aleph
+i = 0
+transformation do |data|
+  i = i+1
+  p "#{i} => #{data[:z00p_doc_number]}"
+
+  {
+    id: data[:z00p_doc_number],
+    data: data[:z00p_str] || data[:z00p_ptr],
+    changed_at: data[:z00p_timestamp] ? Time.parse(data[:z00p_timestamp]) : nil
+  }
+end
+
+
+# Write to destination
+destination Metacrunch::Redis::QueueWriter.new("redis://localhost:6379/mabdemo", "aleph")
