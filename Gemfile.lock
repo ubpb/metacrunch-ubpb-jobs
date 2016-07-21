@@ -9,7 +9,7 @@ GIT
 
 GIT
   remote: git://github.com/ubpb/metacrunch-ubpb.git
-  revision: 3498c7541461c7581b608bb76670992f79f22852
+  revision: a85ddea23a7a8801bc1d03989890c038be38dc46
   branch: master
   specs:
     metacrunch-ubpb (3.0.0)
