@@ -8,21 +8,33 @@ GIT
       elasticsearch (~> 1.0)
 
 GIT
-  remote: git://github.com/ubpb/metacrunch-ubpb.git
-  revision: a85ddea23a7a8801bc1d03989890c038be38dc46
+  remote: git://github.com/ubpb/metacrunch-mab2.git
+  revision: c47f4151afd51c8c9a44b470440ba3124a63bf95
   branch: master
   specs:
-    metacrunch-ubpb (3.0.0)
+    metacrunch-mab2 (1.2.1)
+      activesupport (~> 4.2)
+      htmlentities (~> 4.3)
+      nokogiri (~> 1.6)
+      ox (~> 2.1)
+      self_enumerable (~> 0.2)
+
+GIT
+  remote: git://github.com/ubpb/metacrunch-ubpb.git
+  revision: f5fbb0654502588a08dda6b7bf57970e02744c8c
+  branch: master
+  specs:
+    metacrunch-ubpb (3.0.1)
       isbn (~> 2.0.11)
       metacrunch-mab2 (~> 1.2)
       nokogiri (~> 1.6)
 
 GIT
   remote: git://github.com/ubpb/metacrunch.git
-  revision: ac55aa897f412c7b41a3ddfbd002f24df9acd192
+  revision: 37481e2b3d58bbb725ada205bb19a5ebda84bc92
   branch: master
   specs:
-    metacrunch (3.1.0)
+    metacrunch (3.1.1)
       activesupport (>= 4.2, < 5.1)
       colorize (>= 0.8)
       parallel (~> 1.9)
@@ -56,12 +68,6 @@ GEM
     interception (0.5)
     isbn (2.0.11)
     json (1.8.3)
-    metacrunch-mab2 (1.2.1)
-      activesupport (~> 4.2)
-      htmlentities (~> 4.3)
-      nokogiri (~> 1.6)
-      ox (~> 2.1)
-      self_enumerable (~> 0.2)
     method_source (0.8.2)
     mini_portile2 (2.1.0)
     minitest (5.9.0)
@@ -100,6 +106,7 @@ DEPENDENCIES
   colorize (>= 0.7)
   metacrunch!
   metacrunch-elasticsearch!
+  metacrunch-mab2!
   metacrunch-ubpb!
   parallel (~> 1.9.0)
   pry-byebug (>= 3.3.0)
