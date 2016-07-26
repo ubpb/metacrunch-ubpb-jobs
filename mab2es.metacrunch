@@ -1,3 +1,5 @@
+Bundler.require(:default, :development)
+
 require_relative "mab2es/helper"
 require_relative "mab2es/mapping"
 require_relative "mab2es/settings"
@@ -19,8 +21,6 @@ end
 #
 SETTINGS[:index][:number_of_replicas] = options[:number_of_replicas]
 
-logger = Logger.new(STDOUT)
-
 mab2primo_transformation = Metacrunch::UBPB::Transformations::MabToPrimo.new
 primo2es_transformation = Metacrunch::UBPB::Transformations::PrimoToElasticsearch.new
 
@@ -28,7 +28,7 @@ es_index_creator = Metacrunch::Elasticsearch::IndexCreator.new({
   delete_existing_index: false,
   default_mapping: MAPPING,
   index: options[:index],
-  logger: logger,
+  logger: Logger.new(STDOUT),
   settings: SETTINGS,
   url: options[:url]
 })
@@ -36,7 +36,7 @@ es_index_creator = Metacrunch::Elasticsearch::IndexCreator.new({
 es_indexer = Metacrunch::Elasticsearch::Indexer.new({
   id_accessor: -> (item) { item["id"] },
   index: options[:index],
-  logger: logger,
+  logger: Logger.new(STDOUT),
   type: options[:type],
   url: options[:url]
 })
@@ -51,7 +51,7 @@ post_process { puts "Process finished.".colorize(:yellow) }
 
 
 #
-# Source / destination config
+# Source
 #
 source Metacrunch::Fs::Reader.new(args)
 
@@ -62,7 +62,7 @@ source Metacrunch::Fs::Reader.new(args)
 transformation_buffer(options[:bulk_size])
 
 transformation do |files|
-  Parallel.map(files, in_processes: options[:number_of_procs]) do |file|
+  Parallel.map(files, in_processes: options[:number_of_procs] <= 1 ? 0 : options[:number_of_procs]) do |file|
     mab2primo_result = mab2primo_transformation.call(file.contents)
     decode_json!(mab2primo_result)
     primo2es_transformation.call(mab2primo_result)
@@ -70,7 +70,5 @@ transformation do |files|
 end
 
 transformation do |bulk|
-  Parallel.each(bulk.each_slice(bulk.count / 2), in_processes: 2) do |x|
-    es_indexer.call(x)
-  end
+  es_indexer.call(x)
 end
