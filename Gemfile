@@ -2,6 +2,7 @@ source "https://rubygems.org"
 
 gem "metacrunch",               github: "ubpb/metacrunch",               branch: "master"
 gem "metacrunch-elasticsearch", github: "ubpb/metacrunch-elasticsearch", branch: "master"
+gem "metacrunch-mab2",          github: "ubpb/metacrunch-mab2",          branch: "master"
 gem "metacrunch-ubpb",          github: "ubpb/metacrunch-ubpb",          branch: "master"
 
 gem "colorize", ">= 0.7"
