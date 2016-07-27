@@ -10,7 +10,7 @@ require_relative "mab2es/settings"
 options(require_args: true) do
   add :url, "-u", "--url URL", String, "Elasticsearch url", default: "localhost:9200"
   add :index, "-i", "--index STRING", String, "Elasticsearch index name", required: true
-  add :type, "-t", "--type STRING", String, "Elasticsearch type", required: true
+  add :type, "-t", "--type STRING", String, "Elasticsearch type", default: "aleph_record"
   add :number_of_replicas, "-r", "--replicas NUMBER", Integer, default: 0
   add :number_of_procs, "-n", "--number-of-procs NUMBER", Integer, default: 1
   add :bulk_size, "-b", "--bulk NUMBER", Integer, default: 1000
@@ -70,5 +70,5 @@ transformation do |files|
 end
 
 transformation do |bulk|
-  es_indexer.call(x)
+  es_indexer.call(bulk)
 end
