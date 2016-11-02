@@ -6,6 +6,25 @@ MAPPING = {
     enabled: true,
     #store: true # not needed for query, just to be able to view it with fields: ["*"]
   },
+  properties: {
+    title: {
+      type: "string",
+      copy_to: "suggest"
+    },
+    creator_contributor_display: {
+      type: "string",
+      copy_to: "suggest"
+    },
+    subject: {
+      type: "string",
+      index: "no",
+      copy_to: "suggest"
+    },
+    suggest: {
+      type: "string",
+      analyzer: "minimal" # It is the field value which is copied, not the terms (which result from the analysis process).
+    }
+  },
   dynamic_templates: [
     {
       cataloging_date: {
