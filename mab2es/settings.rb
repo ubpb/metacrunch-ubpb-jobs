@@ -90,6 +90,7 @@ SETTINGS = {
         "catenate_all": true,
         "preserve_original": true,
         "split_on_numerics": false,
+        "stem_english_possessive": false,
         "type_table": ["+ => ALPHA", "# => ALPHA", ". => ALPHA"]
       },
       "ubpb_word_delimiter_search": {
