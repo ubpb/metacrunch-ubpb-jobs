@@ -1,0 +1,71 @@
+Bundler.require
+require "pry-byebug"
+
+require_relative "mab2es/helper"
+require_relative "mab2es/mapping"
+require_relative "mab2es/settings"
+
+
+options(require_args: false) do
+  add :redis_list_name, "--redis-list", "Redis list name", String, default: "publishing-jobs"
+
+  add :es_url,   "--es-url URL", String, "Elasticsearch url", default: "localhost:9200"
+  add :es_index, "--es-index STRING", String, "Elasticsearch index name", required: true
+end
+
+# Setup a logger
+logger = Logger.new(STDOUT)
+logger.level = Logger::DEBUG
+
+# Setup redis
+redis_conn = ::Redis.new(path: "/tmp/redis.sock")
+
+# Setup MAB transformations
+mab2primo_transformation = Metacrunch::UBPB::Transformations::MabToPrimo.new
+primo2es_transformation = Metacrunch::UBPB::Transformations::PrimoToElasticsearch.new
+
+# Setup Elasticsearch
+SETTINGS[:index][:number_of_replicas] = 0
+
+es_index_creator = Metacrunch::Elasticsearch::IndexCreator.new({
+  delete_existing_index: false,
+  default_mapping: MAPPING,
+  settings: SETTINGS,
+  url: options[:es_url],
+  index: options[:es_index],
+  logger: logger
+})
+es_indexer = Metacrunch::Elasticsearch::Indexer.new({
+  id_accessor: -> (item) { item["id"] },
+  url: options[:es_url],
+  index: options[:es_index],
+  logger: logger,
+  type: "aleph_record"
+})
+
+# Set the source
+source Metacrunch::Redis::QueueReader.new(redis_conn, options[:redis_list_name], blocking: true)
+
+# Pre process hook
+pre_process es_index_creator
+pre_process do
+end
+
+# Post process hook
+post_process do
+end
+
+# Extract the required data from z00p
+transformation do |data|
+  data = JSON.parse(data)
+
+  mab2primo_result = mab2primo_transformation.call(data["data"])
+  decode_json!(mab2primo_result)
+  primo2es_transformation.call(mab2primo_result)
+end
+
+transformation_buffer(1000)
+
+transformation do |bulk|
+  es_indexer.call(bulk)
+end
