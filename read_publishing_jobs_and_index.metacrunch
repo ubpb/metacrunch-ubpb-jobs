@@ -5,20 +5,23 @@ require_relative "mab2es/helper"
 require_relative "mab2es/mapping"
 require_relative "mab2es/settings"
 
-
+# Define job options
 options(require_args: false) do
+  # Redis
+  add :redis_url, "--redis-url", "Redis url", String, default: "localhost"
+  add :redis_port, "--redis-port", "Redis port", String, default: "6379"
   add :redis_list_name, "--redis-list", "Redis list name", String, default: "publishing-jobs"
-
+  # Elasticsearch
   add :es_url,   "--es-url URL", String, "Elasticsearch url", default: "localhost:9200"
   add :es_index, "--es-index STRING", String, "Elasticsearch index name", required: true
 end
 
 # Setup a logger
 logger = Logger.new(STDOUT)
-logger.level = Logger::DEBUG
+logger.level = Logger::INFO
 
 # Setup redis
-redis_conn = ::Redis.new(path: "/tmp/redis.sock")
+redis_conn = ::Redis.new(host: options[:redis_url], port: options[:redis_port])
 
 # Setup MAB transformations
 mab2primo_transformation = Metacrunch::UBPB::Transformations::MabToPrimo.new
@@ -39,33 +42,28 @@ es_indexer = Metacrunch::Elasticsearch::Indexer.new({
   id_accessor: -> (item) { item["id"] },
   url: options[:es_url],
   index: options[:es_index],
-  logger: logger,
-  type: "aleph_record"
+  type: "aleph_record",
+  logger: logger
 })
+
 
 # Set the source
 source Metacrunch::Redis::QueueReader.new(redis_conn, options[:redis_list_name], blocking: true)
 
-# Pre process hook
+# Pre process hook. Creates the ES index if it doesn't exists.
 pre_process es_index_creator
-pre_process do
-end
 
-# Post process hook
-post_process do
-end
-
-# Extract the required data from z00p
+# Transform mab data to our intermediate format for indexing
 transformation do |data|
-  data = JSON.parse(data)
-
   mab2primo_result = mab2primo_transformation.call(data["data"])
   decode_json!(mab2primo_result)
   primo2es_transformation.call(mab2primo_result)
 end
 
+# Use bulks of 1000 records
 transformation_buffer(1000)
 
+# Write the bulks to ES
 transformation do |bulk|
   es_indexer.call(bulk)
 end
