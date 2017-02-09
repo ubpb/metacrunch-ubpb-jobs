@@ -48,7 +48,7 @@ es_indexer = Metacrunch::Elasticsearch::Indexer.new({
 
 
 # Set the source
-source Metacrunch::Redis::QueueReader.new(redis_conn, options[:redis_list_name], blocking: true)
+source Metacrunch::Redis::QueueReader.new(redis_conn, options[:redis_list_name], blocking: true, blocking_timeout: 10)
 
 # Pre process hook. Creates the ES index if it doesn't exists.
 pre_process es_index_creator
