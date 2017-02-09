@@ -21,20 +21,20 @@ GIT
 
 GIT
   remote: git://github.com/ubpb/metacrunch-ubpb.git
-  revision: 3d5835d52fe0db45c5e4413413c4ef4ea4bb9105
+  revision: d712595a27711196b24013a182ddf1f9aad80749
   branch: master
   specs:
-    metacrunch-ubpb (3.0.2)
+    metacrunch-ubpb (3.0.3)
       isbn (~> 2.0.11)
       metacrunch-mab2 (~> 1.2)
       nokogiri (~> 1.6)
 
 GIT
   remote: git://github.com/ubpb/metacrunch.git
-  revision: a6bde5033f91ae5f5b7a98f4aa0c00a2a408cd0e
+  revision: 10dd22ce648aba02dd77bba1e516122df7c6a138
   branch: master
   specs:
-    metacrunch (3.1.3)
+    metacrunch (3.1.4)
       activesupport (>= 4.2, < 5.1)
       colorize (>= 0.8)
       parallel (~> 1.9)
@@ -107,10 +107,10 @@ PLATFORMS
 
 DEPENDENCIES
   colorize (>= 0.7)
-  metacrunch (~> 3.1.1)!
+  metacrunch (~> 3.1.4)!
   metacrunch-elasticsearch (~> 3.0.0)!
   metacrunch-mab2 (~> 1.3.1)!
-  metacrunch-ubpb (~> 3.0.2)!
+  metacrunch-ubpb (~> 3.0.3)!
   parallel (~> 1.9.0)
   pry-byebug (>= 3.3.0)
   pry-rescue (>= 1.4.2)
