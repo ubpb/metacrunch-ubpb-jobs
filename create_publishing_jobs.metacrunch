@@ -1,0 +1,73 @@
+Bundler.require
+require "pry-byebug"
+
+# Define job options
+options(require_args: false) do
+  # Database
+  add :db_user, "--db-user USERNAME", "The database username", String, required: true
+  add :db_password, "--db-password PASSWORD", "The database password", String, required: true
+  add :db_limit, "--db-limit LIMIT", "Limit the results to this number", Integer, default: 0
+  # Redis
+  add :redis_url, "--redis-url URL", "Redis url", String, default: "localhost"
+  add :redis_port, "--redis-port PORT", "Redis port", String, default: "6379"
+  add :redis_list_name, "--redis-list NAME", "Redis list name", String, default: "publishing-jobs"
+end
+
+# Setup a logger
+logger = Logger.new(STDOUT)
+logger.level = Logger::ERROR
+
+# Setup Oracle connection.
+# If you need an ssh tunnel use: ssh -L 1521:localhost:1521 your_oracle_box
+DB = Sequel.oracle("aleph22", user: options[:db_user], password: options[:db_password], host: "localhost", port: 1521, logger: logger)
+
+# Select the data we want from pad50.z00p
+dataset = DB["select * from pad50.z00p"]
+dataset = dataset.order("pad50.z00p.z00p_doc_number")
+dataset = dataset.limit(options[:db_limit]) if options[:db_limit] > 0
+count = dataset.count
+
+# Setup redis
+redis_conn = ::Redis.new(host: options[:redis_url], port: options[:redis_port])
+
+# Setup a progress bar
+progress_bar = ProgressBar.create(
+  title: "Progress",
+  total: count,
+  format: "%t: |%B| %p%% %e",
+  throttle_rate: 1,
+  autostart: false
+)
+
+
+# Set the source
+source dataset
+
+# Pre process hook
+pre_process do
+  puts "Cleaning up Redis list '#{options[:redis_list_name]}' to get a fresh start..."
+  redis_conn.del(options[:redis_list_name])
+
+  puts "Processing #{count} records..."
+  progress_bar.start
+end
+
+# Post process hook
+post_process do
+  progress_bar.finish
+end
+
+# Extract the required data from z00p and convert to json to feed into redis.
+transformation do |data|
+  progress_bar.increment
+
+  logger.debug "Processing record #{data[:z00p_doc_number]}"
+
+  {
+    id: data[:z00p_doc_number],
+    data: data[:z00p_str] || data[:z00p_ptr]
+  }.to_json
+end
+
+# Write to destination
+destination Metacrunch::Redis::QueueWriter.new(redis_conn, options[:redis_list_name])
