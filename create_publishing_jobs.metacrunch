@@ -15,17 +15,14 @@ end
 
 # Setup a logger
 logger = Logger.new(STDOUT)
-logger.level = Logger::ERROR
+logger.level = Logger::INFO
 
 # Setup Oracle connection.
 # If you need an ssh tunnel use: ssh -L 1521:localhost:1521 your_oracle_box
 DB = Sequel.oracle("aleph22", user: options[:db_user], password: options[:db_password], host: "localhost", port: 1521, logger: logger)
 
-# Select the data we want from pad50.z00p
-dataset = DB["select * from pad50.z00p"]
-dataset = dataset.order("pad50.z00p.z00p_doc_number")
-dataset = dataset.limit(options[:db_limit]) if options[:db_limit] > 0
-count = dataset.count
+# Count the number of rows we need to process
+count = DB["pad50.z00p"].count
 
 # Setup redis
 redis_conn = ::Redis.new(host: options[:redis_url], port: options[:redis_port])
@@ -39,9 +36,10 @@ progress_bar = ProgressBar.create(
   autostart: false
 )
 
-
 # Set the source
-source dataset
+source Metacrunch::Db::Reader.new(DB, ->(db) {
+  db["pad50.z00p"].order(:z00p_doc_number)
+}, rows_per_fetch: 5000)
 
 # Pre process hook
 pre_process do
