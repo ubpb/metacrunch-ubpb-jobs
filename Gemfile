@@ -9,6 +9,7 @@ gem "colorize", ">= 0.7"
 gem "parallel", "~> 1.9.0"
 gem "ruby-oci8", "~> 2.0"
 gem "ruby-progressbar", "~> 1.0"
+gem "ox", "2.6.0" # Newer version fail install on old redhat linux on production machine
 
 #gem "activesupport", ">= 5", "< 5.1"
 #gem "ox", github: "ohler55/ox", branch: :master
