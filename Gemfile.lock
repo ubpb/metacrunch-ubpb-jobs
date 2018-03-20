@@ -21,10 +21,10 @@ GIT
 
 GIT
   remote: git://github.com/ubpb/metacrunch-ubpb.git
-  revision: a1c726b1e9cf63069552a0a967556565b1a49dd9
+  revision: 8dab3bf43e2055740bf47d5e5267170ca23babb5
   branch: master
   specs:
-    metacrunch-ubpb (3.0.6)
+    metacrunch-ubpb (3.0.9)
       isbn (~> 2.0.11)
       metacrunch-mab2 (~> 1.2)
       nokogiri (~> 1.6)
@@ -64,16 +64,16 @@ GEM
     faraday (0.11.0)
       multipart-post (>= 1.2, < 3)
     htmlentities (4.3.4)
-    i18n (0.9.0)
+    i18n (0.9.5)
       concurrent-ruby (~> 1.0)
     interception (0.5)
     isbn (2.0.11)
     method_source (0.8.2)
     mini_portile2 (2.3.0)
-    minitest (5.10.3)
+    minitest (5.11.3)
     multi_json (1.12.1)
     multipart-post (2.0.0)
-    nokogiri (1.8.1)
+    nokogiri (1.8.2)
       mini_portile2 (~> 2.3.0)
     ox (2.6.0)
     parallel (1.9.0)
@@ -96,7 +96,7 @@ GEM
     sequel (4.43.0)
     slop (3.6.0)
     thread_safe (0.3.6)
-    tzinfo (1.2.3)
+    tzinfo (1.2.5)
       thread_safe (~> 0.1)
 
 PLATFORMS
@@ -107,7 +107,7 @@ DEPENDENCIES
   metacrunch (~> 3.1.4)!
   metacrunch-elasticsearch (~> 3.0.0)!
   metacrunch-mab2 (~> 1.3.1)!
-  metacrunch-ubpb (~> 3.0.6)!
+  metacrunch-ubpb (~> 3.0.9)!
   ox (= 2.6.0)
   parallel (~> 1.9.0)
   pry-byebug (>= 3.3.0)
