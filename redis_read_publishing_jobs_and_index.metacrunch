@@ -1,9 +1,9 @@
 Bundler.require
 require "pry-byebug"
 
-require_relative "mab2es/helper"
-require_relative "mab2es/mapping"
-require_relative "mab2es/settings"
+require_relative "etc/helper"
+require_relative "etc/mapping"
+require_relative "etc/settings"
 
 # Define job options
 options(require_args: false) do
