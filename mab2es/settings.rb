@@ -19,8 +19,7 @@ SETTINGS = {
           "ubpb_pattern_replace_ü",
           "ubpb_pattern_replace_ß",
           "asciifolding",
-          "ubpb_word_delimiter_index",
-          "ubpb_stop"
+          "ubpb_word_delimiter_index"
         ]
       },
       "default_search": {
@@ -38,6 +37,22 @@ SETTINGS = {
           "asciifolding",
           "ubpb_word_delimiter_search",
           "ubpb_stop"
+        ]
+      },
+      "default_with_stop_words_search": {
+        "type": "custom",
+        "tokenizer": "whitespace",
+        "filter": [
+          "standard",
+          "lowercase",
+          "ubpb_pattern_replace_<",
+          "ubpb_pattern_replace_>",
+          "ubpb_pattern_replace_ä",
+          "ubpb_pattern_replace_ö",
+          "ubpb_pattern_replace_ü",
+          "ubpb_pattern_replace_ß",
+          "asciifolding",
+          "ubpb_word_delimiter_search"
         ]
       },
       "minimal": {
