@@ -38,7 +38,7 @@ progress_bar = ProgressBar.create(
 
 # Set the source
 source Metacrunch::Db::Reader.new(DB, ->(db) {
-  db["pad50.z00p"].order(:z00p_doc_number)
+  db.from(Sequel[:pad50][:z00p]).order(:z00p_doc_number)
 }, rows_per_fetch: 5000)
 
 # Pre process hook
