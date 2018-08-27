@@ -21,10 +21,10 @@ GIT
 
 GIT
   remote: git://github.com/ubpb/metacrunch-ubpb.git
-  revision: 0e273a804ff999721694f10344bf4f70cca038c3
+  revision: d964a48709dc28b707875c924dd1e0ab3ec1346a
   branch: master
   specs:
-    metacrunch-ubpb (3.0.10)
+    metacrunch-ubpb (3.0.11)
       isbn (~> 2.0.11)
       metacrunch-mab2 (~> 1.2)
       nokogiri (~> 1.6)
@@ -44,9 +44,9 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (5.0.6)
+    activesupport (5.0.7)
       concurrent-ruby (~> 1.0, >= 1.0.2)
-      i18n (~> 0.7)
+      i18n (>= 0.7, < 2)
       minitest (~> 5.1)
       tzinfo (~> 1.1)
     byebug (9.0.6)
@@ -64,7 +64,7 @@ GEM
     faraday (0.11.0)
       multipart-post (>= 1.2, < 3)
     htmlentities (4.3.4)
-    i18n (0.9.5)
+    i18n (1.1.0)
       concurrent-ruby (~> 1.0)
     interception (0.5)
     isbn (2.0.11)
@@ -73,9 +73,9 @@ GEM
     minitest (5.11.3)
     multi_json (1.12.1)
     multipart-post (2.0.0)
-    nokogiri (1.8.2)
+    nokogiri (1.8.4)
       mini_portile2 (~> 2.3.0)
-    ox (2.9.3)
+    ox (2.9.4)
     parallel (1.9.0)
     pry (0.10.4)
       coderay (~> 1.1.0)
@@ -107,7 +107,7 @@ DEPENDENCIES
   metacrunch (~> 3.1.4)!
   metacrunch-elasticsearch (~> 3.0.0)!
   metacrunch-mab2 (~> 1.3.1)!
-  metacrunch-ubpb (~> 3.0.10)!
+  metacrunch-ubpb (~> 3.0.11)!
   ox (~> 2.9.3)
   parallel (~> 1.9.0)
   pry-byebug (>= 3.3.0)

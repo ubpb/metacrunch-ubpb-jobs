@@ -3,7 +3,7 @@ source "https://rubygems.org"
 gem "metacrunch",               "~> 3.1.4", github: "ubpb/metacrunch", branch: "3.x"
 gem "metacrunch-elasticsearch", "~> 3.0.0", github: "ubpb/metacrunch-elasticsearch", branch: "master"
 gem "metacrunch-mab2",          "~> 1.3.1", github: "ubpb/metacrunch-marcxml", tag: 'v1.3.1'
-gem "metacrunch-ubpb",          "~> 3.0.10", github: "ubpb/metacrunch-ubpb", branch: "master"
+gem "metacrunch-ubpb",          "~> 3.0.11", github: "ubpb/metacrunch-ubpb", branch: "master"
 
 gem "colorize", ">= 0.7"
 gem "parallel", "~> 1.9.0"
