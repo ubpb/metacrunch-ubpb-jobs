@@ -2,6 +2,7 @@ Bundler.require(:default, :development)
 
 require_relative "etc/helper"
 require_relative "etc/mapping"
+require_relative "etc/mapping_es6"
 require_relative "etc/settings"
 
 #
@@ -15,12 +16,13 @@ options do
   add :db_user, "--db-user USERNAME", "The database username", String, required: true
   add :db_password, "--db-password PASSWORD", "The database password", String, required: true
   # Elasticsearch
-  add :es_url,   "--es-url URL", String, "Elasticsearch url", default: "localhost:9200"
+  add :es_url,   "--es-url URL", String, "Elasticsearch url", default: "http://localhost:9200"
   add :es_index, "--es-index STRING", String, "Elasticsearch index name", required: true
+  add :es_mode,  "--es-mode MODE", Integer, "Compatability for ES 2.x=2 or 6.x=6", default: 2
   # Loglevel
   add :log_level, "--log-level LEVEL", "The log level", String, default: "info"
   # Timestamp
-  add :last_run, "--last_run DATETIME", "Only fetch records that have been updated since DATETIME", String, required: true
+  add :last_run, "--last-run DATETIME", "Only fetch records that have been updated since DATETIME", String, required: true
 end
 
 # Setup a logger
@@ -32,31 +34,29 @@ mab2primo_transformation = Metacrunch::UBPB::Transformations::MabToPrimo.new
 primo2es_transformation = Metacrunch::UBPB::Transformations::PrimoToElasticsearch.new
 
 # Setup Elasticsearch
-SETTINGS[:index][:number_of_replicas] = 0
-es_index_creator = Metacrunch::Elasticsearch::IndexCreator.new({
-  delete_existing_index: false,
-  default_mapping: MAPPING,
-  settings: SETTINGS,
-  url: options[:es_url],
-  index: options[:es_index],
-  logger: logger
-})
-es_indexer = Metacrunch::Elasticsearch::Indexer.new({
-  id_accessor: -> (item) { item["id"] },
-  url: options[:es_url],
-  index: options[:es_index],
-  type: "aleph_record",
-  logger: logger
-})
+elasticsearch = Elasticsearch::Client.new(url: options[:es_url], logger: logger)
+# ... create index if the index doesn't exists
+unless elasticsearch.indices.exists?(index: options[:es_index])
+  elasticsearch.indices.create(
+    index: options[:es_index],
+    body: {
+      settings: SETTINGS,
+      mappings: case options[:es_mode]
+      when 6 then MAPPING_ES6
+      else MAPPING
+      end
+    }
+  )
+end
 
 # Setup Oracle connection.
 # If you need an ssh tunnel use: ssh -L 1521:localhost:1521 your_oracle_box
 DB = Sequel.oracle(
-  options[:db_name], 
-  user: options[:db_user], 
-  password: options[:db_password], 
-  host: options[:db_host], 
-  port: options[:db_port], 
+  options[:db_name],
+  user: options[:db_user],
+  password: options[:db_password],
+  host: options[:db_host],
+  port: options[:db_port],
   logger: logger
 )
 
@@ -65,43 +65,49 @@ last_run = Time.parse(options[:last_run]).utc.strftime("%Y%m%d%H%M%L")
 dataset  = DB.from(Sequel[:pad50][:z00p]).order(:z00p_doc_number).where{z00p_timestamp >= last_run}
 
 # Set the source
-source Metacrunch::Db::Reader.new(DB, ->(db) {
-  dataset
-}, rows_per_fetch: 5000)
+source Metacrunch::DB::Source.new(dataset, rows_per_fetch: 5000)
 
 # Pre-process
-pre_process do
-  # Creates the ES index if it doesn't exists.
-  es_index_creator.call
+pre_process -> {
   # Log
   logger.info "Processing #{dataset.count} records."
-end
+}
 
 # Loggin step
-transformation do |data|
+transformation ->(data) {
   logger.debug "Processing record #{data[:z00p_doc_number]}"
   data
-end
+}
 
 # Extract ID and DATA
-transformation do |data|
+transformation ->(data) {
   {
     id: data[:z00p_doc_number],
     data: data[:z00p_str] || data[:z00p_ptr]
   }
-end
+}
 
 # Transform mab data to our intermediate format for indexing
-transformation do |data|
+transformation ->(data) {
   mab2primo_result = mab2primo_transformation.call(data[:data])
   decode_json!(mab2primo_result)
   primo2es_transformation.call(mab2primo_result)
-end
+}
 
-# Use bulks of 1000 records
-transformation_buffer(1000)
+transformation ->(data) {
+  {
+    index: {
+      _index: options[:es_index],
+      _type: "aleph_record",
+      _id: data.delete("id"),
+      data: data
+    }
+  }
+}
 
-# Write the bulks to ES
-transformation do |bulk|
-  es_indexer.call(bulk)
-end
+transformation ->(data) do
+  data
+end, buffer: 500
+
+# Write data into elasticsearch
+destination Metacrunch::Elasticsearch::Destination.new(elasticsearch)

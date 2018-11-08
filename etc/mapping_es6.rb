@@ -1,28 +1,21 @@
-MAPPING = {
+MAPPING_ES6 = {
   aleph_record: {
-    #_id: { # http://elasticsearch-users.115913.n3.nabble.com/Range-for-id-td4025670.html
-    #  index: "not_analyzed"
-    #},
-    _timestamp: {
-      enabled: true,
-      #store: true # not needed for query, just to be able to view it with fields: ["*"]
-    },
     properties: {
       title: {
-        type: "string",
+        type: "text",
         copy_to: "suggest"
       },
       creator_contributor_display: {
-        type: "string",
+        type: "text",
         copy_to: "suggest"
       },
       subject: {
-        type: "string",
-        index: "no",
+        type: "text",
+        index: false,
         copy_to: "suggest"
       },
       suggest: {
-        type: "string",
+        type: "text",
         analyzer: "minimal" # It is the field value which is copied, not the terms (which result from the analysis process).
       }
     },
@@ -58,7 +51,7 @@ MAPPING = {
           match: ".+_facet|.+_sort|.+_sort2|ht_number|.+_id|id|ddc|status|superorder",
           match_pattern: "regex",
           mapping: {
-            index: "not_analyzed"
+            index: false
           }
         }
       },
@@ -68,7 +61,7 @@ MAPPING = {
           match: "isbn|format|link_to_toc|resource_link|signature|subject|title",
           match_pattern: "regex",
           mapping: {
-            index: "no"
+            index: false
           }
         }
       }
