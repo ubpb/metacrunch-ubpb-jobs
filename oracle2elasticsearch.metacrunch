@@ -106,14 +106,24 @@ transformation ->(data) {
 
   id = data.delete("id")
   if id.present?
-    {
-      index: {
-        _index: options[:es_index],
-        _type: "aleph_record",
-        _id: id,
-        data: data
+    if data["status"] == "D"
+      {
+        delete: {
+          _index: options[:es_index],
+          _type: "aleph_record",
+          _id: id
+        }
       }
-    }
+    else
+      {
+        index: {
+          _index: options[:es_index],
+          _type: "aleph_record",
+          _id: id,
+          data: data
+        }
+      }
+    end
   else
     raise "No ID for record. This must not happen!"
   end
