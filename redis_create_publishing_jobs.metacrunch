@@ -1,31 +1,47 @@
-Bundler.require
-require "pry-byebug"
+Bundler.require(:default, :development)
 
 # Define job options
 options(require_args: false) do
   # Database
+  add :db_host, "--db-host HOSTNAME", "The database host", String, default: "localhost"
+  add :db_port, "--db-port PORT", "The database port", Integer, default: 1521
+  add :db_name, "--db-name NAME", "The database name", String, default: "aleph22"
   add :db_user, "--db-user USERNAME", "The database username", String, required: true
   add :db_password, "--db-password PASSWORD", "The database password", String, required: true
-  add :db_limit, "--db-limit LIMIT", "Limit the results to this number", Integer, default: 0
   # Redis
-  add :redis_url, "--redis-url URL", "Redis url", String, default: "localhost"
-  add :redis_port, "--redis-port PORT", "Redis port", String, default: "6379"
+  add :redis_url, "--redis-url URL", "Redis url", String, default: "redis://localhost:6379/metacrunch"
   add :redis_list_name, "--redis-list NAME", "Redis list name", String, default: "publishing-jobs"
+  # Loglevel
+  add :log_level, "--log-level LEVEL", "The log level", String, default: "error"
+  # Timestamp
+  add :last_run, "--last-run DATETIME", "Only fetch records that have been updated since DATETIME", String, required: true
 end
 
 # Setup a logger
 logger = Logger.new(STDOUT)
-logger.level = Logger::INFO
+logger.level = options[:log_level]
+
+# Setup redis
+redis_conn = Redis.new(url: options[:redis_url])
 
 # Setup Oracle connection.
 # If you need an ssh tunnel use: ssh -L 1521:localhost:1521 your_oracle_box
-DB = Sequel.oracle("aleph22", user: options[:db_user], password: options[:db_password], host: "localhost", port: 1521, logger: logger)
+DB = Sequel.oracle(
+  options[:db_name],
+  user: options[:db_user],
+  password: options[:db_password],
+  host: options[:db_host],
+  port: options[:db_port],
+  logger: logger
+)
 
-# Count the number of rows we need to process
-count = DB["pad50.z00p"].count
+# Prepare the dataset
+last_run = Time.parse(options[:last_run]).utc.strftime("%Y%m%d%H%M%L")
+dataset  = DB.from(Sequel[:pad50][:z00p]).order(:z00p_doc_number).where{z00p_timestamp >= last_run}
+count    = dataset.count
 
-# Setup redis
-redis_conn = ::Redis.new(host: options[:redis_url], port: options[:redis_port])
+# Set the source
+source Metacrunch::DB::Source.new(dataset, rows_per_fetch: 5000)
 
 # Setup a progress bar
 progress_bar = ProgressBar.create(
@@ -36,36 +52,26 @@ progress_bar = ProgressBar.create(
   autostart: false
 )
 
-# Set the source
-source Metacrunch::Db::Reader.new(DB, ->(db) {
-  db.from(Sequel[:pad50][:z00p]).order(:z00p_doc_number)
-}, rows_per_fetch: 5000)
-
 # Pre process hook
-pre_process do
+pre_process -> {
   puts "Cleaning up Redis list '#{options[:redis_list_name]}' to get a fresh start..."
   redis_conn.del(options[:redis_list_name])
 
   puts "Processing #{count} records..."
   progress_bar.start
-end
+}
 
 # Post process hook
-post_process do
+post_process -> {
   progress_bar.finish
-end
+}
 
 # Extract the required data from z00p and convert to json to feed into redis.
-transformation do |data|
+transformation ->(db_row) {
   progress_bar.increment
 
-  logger.debug "Processing record #{data[:z00p_doc_number]}"
-
-  {
-    id: data[:z00p_doc_number],
-    data: data[:z00p_str] || data[:z00p_ptr]
-  }.to_json
-end
+  (db_row[:z00p_str] || db_row[:z00p_ptr]).to_json
+}
 
 # Write to destination
-destination Metacrunch::Redis::QueueWriter.new(redis_conn, options[:redis_list_name])
+destination Metacrunch::Redis::QueueDestination.new(redis_conn, options[:redis_list_name])

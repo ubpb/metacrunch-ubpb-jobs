@@ -1,69 +1,95 @@
-Bundler.require
-require "pry-byebug"
+Bundler.require(:default, :development)
 
 require_relative "etc/helper"
 require_relative "etc/mapping"
+require_relative "etc/mapping_es6"
 require_relative "etc/settings"
 
 # Define job options
 options(require_args: false) do
   # Redis
-  add :redis_url, "--redis-url", "Redis url", String, default: "localhost"
-  add :redis_port, "--redis-port", "Redis port", String, default: "6379"
-  add :redis_list_name, "--redis-list", "Redis list name", String, default: "publishing-jobs"
+  add :redis_url, "--redis-url URL", "Redis url", String, default: "redis://localhost:6379/metacrunch"
+  add :redis_list_name, "--redis-list NAME", "Redis list name", String, default: "publishing-jobs"
   # Elasticsearch
-  add :es_url,   "--es-url URL", String, "Elasticsearch url", default: "localhost:9200"
+  add :es_url,   "--es-url URL", String, "Elasticsearch url", default: "http://localhost:9200"
   add :es_index, "--es-index STRING", String, "Elasticsearch index name", required: true
+  add :es_mode,  "--es-mode MODE", Integer, "Compatability for ES 2.x=2 or 6.x=6", default: 2
+  # Loglevel
+  add :log_level, "--log-level LEVEL", "The log level", String, default: "error"
 end
 
 # Setup a logger
 logger = Logger.new(STDOUT)
-logger.level = Logger::INFO
+logger.level = options[:log_level]
 
 # Setup redis
-redis_conn = ::Redis.new(host: options[:redis_url], port: options[:redis_port])
+redis_conn = Redis.new(url: options[:redis_url])
 
 # Setup MAB transformations
 mab2primo_transformation = Metacrunch::UBPB::Transformations::MabToPrimo.new
 primo2es_transformation = Metacrunch::UBPB::Transformations::PrimoToElasticsearch.new
 
 # Setup Elasticsearch
-SETTINGS[:index][:number_of_replicas] = 0
-
-es_index_creator = Metacrunch::Elasticsearch::IndexCreator.new({
-  delete_existing_index: false,
-  default_mapping: MAPPING,
-  settings: SETTINGS,
-  url: options[:es_url],
-  index: options[:es_index],
-  logger: logger
-})
-es_indexer = Metacrunch::Elasticsearch::Indexer.new({
-  id_accessor: -> (item) { item["id"] },
-  url: options[:es_url],
-  index: options[:es_index],
-  type: "aleph_record",
-  logger: logger
-})
-
+elasticsearch = Elasticsearch::Client.new(url: options[:es_url], logger: logger)
+# ... create index if the index doesn't exists
+unless elasticsearch.indices.exists?(index: options[:es_index])
+  elasticsearch.indices.create(
+    index: options[:es_index],
+    body: {
+      settings: SETTINGS,
+      mappings: case options[:es_mode]
+      when 6 then MAPPING_ES6
+      else MAPPING
+      end
+    }
+  )
+end
 
 # Set the source
-source Metacrunch::Redis::QueueReader.new(redis_conn, options[:redis_list_name], blocking: true, blocking_timeout: 10)
+source Metacrunch::Redis::QueueSource.new(redis_conn, options[:redis_list_name], blocking_mode: true)
 
-# Pre process hook. Creates the ES index if it doesn't exists.
-pre_process es_index_creator
+pre_process -> {
+  puts "Worker started. Waiting for data..."
+}
+
+# Extract and parse Redis json payload
+transformation ->(redis_result) {
+  JSON.parse(redis_result)
+}
 
 # Transform mab data to our intermediate format for indexing
-transformation do |data|
-  mab2primo_result = mab2primo_transformation.call(data["data"])
+transformation ->(marc_xml) {
+  mab2primo_result = mab2primo_transformation.call(marc_xml)
   decode_json!(mab2primo_result)
   primo2es_transformation.call(mab2primo_result)
-end
+}
 
-# Use bulks of 1000 records
-transformation_buffer(1000)
+transformation ->(data) {
+  id = data.delete("id")
+  if id.present?
+    [
+      {
+        index: {
+          _index: options[:es_index],
+          _type: "aleph_record",
+          _id: id,
+          data: data
+        }
+      }
+    ]
+  else
+    raise "No ID for record. This must not happen!"
+  end
+}
 
-# Write the bulks to ES
-transformation do |bulk|
-  es_indexer.call(bulk)
-end
+# Write data into elasticsearch
+destination Metacrunch::Elasticsearch::Destination.new(elasticsearch, result_callback: ->(result) {
+  print "." # Show some progress
+
+  if result["errors"]
+    error_items = result["items"].select{|i| i["index"]["error"].present?}
+    error_items.each do |ei|
+      puts "ERROR: Record: #{ei["index"]["_id"]}, Reason: #{ei["index"]["error"]["reason"]}"
+    end
+  end
+})
