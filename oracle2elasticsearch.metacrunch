@@ -104,7 +104,7 @@ transformation ->(marc_xml) {
 transformation ->(data) {
   progress_bar.increment
 
-  id = data.delete("id")
+  id = data["id"]
   if id.present?
     if data["status"] == "D"
       {

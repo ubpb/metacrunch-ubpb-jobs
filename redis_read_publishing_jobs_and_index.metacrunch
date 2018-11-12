@@ -65,7 +65,7 @@ transformation ->(marc_xml) {
 }
 
 transformation ->(data) {
-  id = data.delete("id")
+  id = data["id"]
   if id.present?
     if data["status"] == "D"
       [
