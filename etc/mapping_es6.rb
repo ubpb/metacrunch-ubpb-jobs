@@ -1,13 +1,18 @@
 MAPPING_ES6 = {
   "aleph_record": {
     "properties": {
-      "abstract": {
+      "custom_all": {
         "type": "text"
+      },
+      "abstract": {
+        "type": "text",
+        "copy_to": "custom_all"
       },
       "additional_data": {
         "properties": {
           "local_comment": {
-            "type": "text"
+            "type": "text",
+            "copy_to": "custom_all"
           }
         }
       },
@@ -25,7 +30,8 @@ MAPPING_ES6 = {
         "type": "long"
       },
       "creationdate_search": {
-        "type": "keyword"
+        "type": "keyword",
+        "copy_to": "custom_all"
       },
       "creator_contributor_display": {
         "type": "text"
@@ -34,19 +40,23 @@ MAPPING_ES6 = {
         "type": "keyword"
       },
       "creator_contributor_search": {
-        "type": "text"
+        "type": "text",
+        "copy_to": "custom_all"
       },
       "ddc": {
-        "type": "keyword"
+        "type": "keyword",
+        "copy_to": "custom_all"
       },
       "delivery_category_facet": {
         "type": "keyword"
       },
       "description": {
-        "type": "text"
+        "type": "text",
+        "copy_to": "custom_all"
       },
       "edition": {
-        "type": "text"
+        "type": "text",
+        "copy_to": "custom_all"
       },
       "erscheinungsform_facet": {
         "type": "keyword"
@@ -56,16 +66,20 @@ MAPPING_ES6 = {
         "index": false
       },
       "fulltext_links": {
-        "type": "text"
+        "type": "text",
+        "index": false
       },
       "ht_number": {
-        "type": "keyword"
+        "type": "keyword",
+        "copy_to": "custom_all"
       },
       "id": {
-        "type": "keyword"
+        "type": "keyword",
+        "copy_to": "custom_all"
       },
       "ils_record_id": {
-        "type": "keyword"
+        "type": "keyword",
+        "copy_to": "custom_all"
       },
       "inhaltstyp_facet": {
         "type": "keyword"
@@ -73,7 +87,8 @@ MAPPING_ES6 = {
       "is_part_of": {
         "properties": {
           "ht_number": {
-            "type": "keyword"
+            "type": "keyword",
+            "copy_to": "custom_all"
           },
           "label": {
             "type": "text"
@@ -100,10 +115,12 @@ MAPPING_ES6 = {
         "index": false
       },
       "isbn_search": {
-        "type": "text"
+        "type": "text",
+        "copy_to": "custom_all"
       },
       "issn": {
-        "type": "text"
+        "type": "text",
+        "copy_to": "custom_all"
       },
       "journal_stock": {
         "properties": {
@@ -143,14 +160,16 @@ MAPPING_ES6 = {
         "index": false
       },
       "local_comment": {
-        "type": "text"
+        "type": "text",
+        "copy_to": "custom_all"
       },
       "materialtyp_facet": {
         "type": "keyword"
       },
       "notation": {
         "type": "text",
-        "analyzer": "minimal"
+        "analyzer": "minimal",
+        "copy_to": "custom_all"
       },
       "notation_facet": {
         "type": "keyword"
@@ -159,12 +178,14 @@ MAPPING_ES6 = {
         "type": "keyword"
       },
       "publisher": {
-        "type": "text"
+        "type": "text",
+        "copy_to": "custom_all"
       },
       "relation": {
         "properties": {
           "ht_number": {
-            "type": "keyword"
+            "type": "keyword",
+            "copy_to": "custom_all"
           },
           "label": {
             "type": "text",
@@ -189,24 +210,30 @@ MAPPING_ES6 = {
         }
       },
       "secondary_form_creationdate": {
-        "type": "keyword"
+        "type": "keyword",
+        "copy_to": "custom_all"
       },
       "secondary_form_isbn": {
-        "type": "text"
+        "type": "text",
+        "copy_to": "custom_all"
       },
       "secondary_form_physical_description": {
-        "type": "text"
+        "type": "text",
+        "copy_to": "custom_all"
       },
       "secondary_form_preliminary_phrase": {
-        "type": "text"
+        "type": "text",
+        "copy_to": "custom_all"
       },
       "secondary_form_publisher": {
-        "type": "text"
+        "type": "text",
+        "copy_to": "custom_all"
       },
       "secondary_form_relation": {
         "properties": {
           "ht_number": {
-            "type": "keyword"
+            "type": "keyword",
+            "copy_to": "custom_all"
           },
           "label": {
             "type": "text",
@@ -217,7 +244,8 @@ MAPPING_ES6 = {
       "secondary_form_superorder": {
         "properties": {
           "ht_number": {
-            "type": "keyword"
+            "type": "keyword",
+            "copy_to": "custom_all"
           },
           "label": {
             "type": "text",
@@ -231,10 +259,12 @@ MAPPING_ES6 = {
       },
       "selection_code": {
         "type": "text",
-        "analyzer": "minimal"
+        "analyzer": "minimal",
+        "copy_to": "custom_all"
       },
       "short_title": {
-        "type": "text"
+        "type": "text",
+        "copy_to": "custom_all"
       },
       "short_title_sort": {
         "type": "keyword"
@@ -244,7 +274,8 @@ MAPPING_ES6 = {
         "index": false
       },
       "signature_search": {
-        "type": "text"
+        "type": "text",
+        "copy_to": "custom_all"
       },
       "source": {
         "properties": {
@@ -253,7 +284,8 @@ MAPPING_ES6 = {
             "index": false
           },
           "ht_number": {
-            "type": "keyword"
+            "type": "keyword",
+            "copy_to": "custom_all"
           },
           "label": {
             "type": "text",
@@ -276,7 +308,8 @@ MAPPING_ES6 = {
         "type": "keyword"
       },
       "subject_search": {
-        "type": "text"
+        "type": "text",
+        "copy_to": "custom_all"
       },
       "superorder": {
         "type": "keyword"
@@ -290,13 +323,15 @@ MAPPING_ES6 = {
         "index": false
       },
       "title_search": {
-        "type": "text"
+        "type": "text",
+        "copy_to": "custom_all"
       },
       "title_sort": {
         "type": "keyword"
       },
       "toc": {
-        "type": "text"
+        "type": "text",
+        "copy_to": "custom_all"
       },
       "volume_count": {
         "type": "text",
@@ -309,7 +344,8 @@ MAPPING_ES6 = {
         "type": "keyword"
       },
       "zdb_id": {
-        "type": "keyword"
+        "type": "keyword",
+        "copy_to": "custom_all"
       }
     }
   }
