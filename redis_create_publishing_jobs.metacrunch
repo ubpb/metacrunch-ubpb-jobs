@@ -41,7 +41,7 @@ dataset  = DB.from(Sequel[:pad50][:z00p]).order(:z00p_doc_number).where{z00p_tim
 count    = dataset.count
 
 # Set the source
-source Metacrunch::DB::Source.new(dataset, rows_per_fetch: 5000)
+source Metacrunch::DB::Source.new(dataset, rows_per_fetch: 6000)
 
 # Setup a progress bar
 progress_bar = ProgressBar.create(
@@ -66,12 +66,17 @@ post_process -> {
   progress_bar.finish
 }
 
-# Extract the required data from z00p and convert to json to feed into redis.
+# Extract the required data from z00p.
 transformation ->(db_row) {
   progress_bar.increment
 
-  (db_row[:z00p_str] || db_row[:z00p_ptr]).to_json
+  (db_row[:z00p_str] || db_row[:z00p_ptr])
 }
+
+# Create bulk records and convert to json to feed into redis
+transformation ->(marc_xml_bulk) {
+  marc_xml_bulk.to_json
+}, buffer: 200
 
 # Write to destination
 destination Metacrunch::Redis::QueueDestination.new(redis_conn, options[:redis_list_name])

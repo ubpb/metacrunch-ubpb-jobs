@@ -57,40 +57,37 @@ transformation ->(redis_result) {
   JSON.parse(redis_result)
 }
 
-# Transform mab data to our intermediate format for indexing
-transformation ->(marc_xml) {
-  mab2primo_result = mab2primo_transformation.call(marc_xml)
-  decode_json!(mab2primo_result)
-  primo2es_transformation.call(mab2primo_result)
+# Transform marc data bulk to our intermediate format for indexing
+transformation ->(marc_xml_bulk) {
+  marc_xml_bulk.map do |marc_xml|
+    mab2primo_result = mab2primo_transformation.call(marc_xml)
+    decode_json!(mab2primo_result)
+    primo2es_transformation.call(mab2primo_result)
+  end
 }
 
-transformation ->(data) {
-  id = data["id"]
-  if id.present?
+transformation ->(data_bulk) {
+  data_bulk.map do |data|
+    raise "No ID for record. This must not happen!" if data["id"].blank?
+
     if data["status"] == "D"
-      [
-        {
-          delete: {
-            _index: options[:es_index],
-            _type: "aleph_record",
-            _id: id
-          }
+      {
+        delete: {
+          _index: options[:es_index],
+          _type: "aleph_record",
+          _id: data["id"]
         }
-      ]
+      }
     else
-      [
-        {
-          index: {
-            _index: options[:es_index],
-            _type: "aleph_record",
-            _id: id,
-            data: data
-          }
+      {
+        index: {
+          _index: options[:es_index],
+          _type: "aleph_record",
+          _id: data["id"],
+          data: data
         }
-      ]
+      }
     end
-  else
-    raise "No ID for record. This must not happen!"
   end
 }
 
