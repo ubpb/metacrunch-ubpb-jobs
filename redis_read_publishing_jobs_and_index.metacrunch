@@ -13,7 +13,7 @@ options(require_args: false) do
   # Elasticsearch
   add :es_url,   "--es-url URL", String, "Elasticsearch url", default: "http://localhost:9200"
   add :es_index, "--es-index STRING", String, "Elasticsearch index name", required: true
-  add :es_mode,  "--es-mode MODE", Integer, "Compatability for ES 2.x=2 or 6.x=6", default: 2
+  add :es_mode,  "--es-mode MODE", Integer, "Compatability for ES 2.x=2 or 6.x=6", default: 6
   # Loglevel
   add :log_level, "--log-level LEVEL", "The log level", String, default: "error"
 end
