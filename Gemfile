@@ -1,9 +1,11 @@
 source "https://rubygems.org"
 
-gem "metacrunch",               "~> 3.1.4", github: "ubpb/metacrunch", branch: "3.x"
-gem "metacrunch-elasticsearch", "~> 3.0.0", github: "ubpb/metacrunch-elasticsearch", branch: "master"
-gem "metacrunch-mab2",          "~> 1.3.1", github: "ubpb/metacrunch-marcxml", tag: 'v1.3.1'
-gem "metacrunch-ubpb",          "3.0.14", github: "ubpb/metacrunch-ubpb", branch: "master"
+gem "metacrunch",               "~> 4.2.0"
+gem "metacrunch-db",            "~> 1.0.0"
+gem "metacrunch-elasticsearch", "~> 4.1.1"
+gem "metacrunch-redis",         "~> 1.1.0"
+gem "metacrunch-mab2",          "~> 1.3.2", github: "ubpb/metacrunch-marcxml", branch: 'v1.3'
+gem "metacrunch-ubpb",          "3.0.17", github: "ubpb/metacrunch-ubpb", branch: "master"
 
 gem "colorize", ">= 0.7"
 gem "parallel", "~> 1.9.0"
