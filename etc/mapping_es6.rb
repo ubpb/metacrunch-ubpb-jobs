@@ -91,13 +91,15 @@ MAPPING_ES6 = {
             "copy_to": "custom_all"
           },
           "label": {
-            "type": "text"
+            "type": "text",
+            "copy_to": "custom_all"
           },
           "label_additions": {
             "type": "text"
           },
           "volume_count": {
-            "type": "text"
+            "type": "text",
+            "copy_to": "custom_all"
           }
         }
       },
@@ -335,7 +337,7 @@ MAPPING_ES6 = {
       },
       "volume_count": {
         "type": "text",
-        "index": false
+        "copy_to": "custom_all"
       },
       "volume_count_sort": {
         "type": "keyword"
