@@ -12,10 +12,10 @@ GIT
 
 GIT
   remote: git://github.com/ubpb/metacrunch-ubpb.git
-  revision: bbfe087249efcf557884c545209eb89e3ca01925
+  revision: a2d0b315ee8fe791895422fd529526c45c894518
   branch: master
   specs:
-    metacrunch-ubpb (3.0.17)
+    metacrunch-ubpb (3.0.18)
       isbn (~> 2.0.11)
       metacrunch-mab2 (~> 1.2)
       nokogiri (~> 1.6)
@@ -98,7 +98,7 @@ DEPENDENCIES
   metacrunch-elasticsearch (~> 4.1.1)
   metacrunch-mab2 (~> 1.3.2)!
   metacrunch-redis (~> 1.1.0)
-  metacrunch-ubpb (= 3.0.17)!
+  metacrunch-ubpb (= 3.0.18)!
   ox (~> 2.9.3)
   parallel (~> 1.9.0)
   pry-byebug (>= 3.3.0)
