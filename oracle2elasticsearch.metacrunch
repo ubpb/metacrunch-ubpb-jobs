@@ -102,7 +102,7 @@ transformation ->(marc_xml) {
 }
 
 transformation ->(data) {
-  progress_bar.increment
+  begin progress_bar.increment rescue nil
 
   id = data["id"]
   if id.present?
