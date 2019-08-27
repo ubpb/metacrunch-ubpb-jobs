@@ -179,6 +179,10 @@ MAPPING_ES6 = {
       "notation_sort": {
         "type": "keyword"
       },
+      "oclc_id": {
+        "type": "keyword",
+        "copy_to": "custom_all"
+      },
       "publisher": {
         "type": "text",
         "copy_to": "custom_all"
