@@ -7,6 +7,7 @@ gem "metacrunch-redis",         "~> 1.1.0"
 gem "metacrunch-mab2",          "~> 1.3.2", github: "ubpb/metacrunch-marcxml", branch: 'v1.3'
 gem "metacrunch-ubpb",          "3.0.19", github: "ubpb/metacrunch-ubpb", branch: "master"
 
+gem "activesupport", ">= 5.1.0", "< 6"
 gem "colorize", ">= 0.7"
 gem "parallel", "~> 1.9.0"
 gem "ruby-oci8", "~> 2.0"
